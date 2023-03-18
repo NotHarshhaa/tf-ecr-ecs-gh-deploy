@@ -55,8 +55,8 @@ jobs:
 
     steps:    
       - name: Initialize Terraform
-        working-directory: ./terraform
         run: |
+          cd terraform/
           terraform init
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -71,8 +71,8 @@ jobs:
         if: steps.plan.outcome == 'success'
         id: destroy
         continue-on-error: true
-        working-directory: ./terraform
         run: |
+          cd terraform/
           terraform destroy -auto-approve
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
