@@ -80,3 +80,12 @@ resource "aws_ecs_service" "my_service" {
   desired_count = 1
   launch_type = "EC2"
 }
+
+# Add Terraform Backend Service
+terraform {
+  backend "s3" {
+    bucket = "terraformbackendaccess"
+    key    = "terraformbackendaccess.tfstate"
+    region = "us-east-1"
+  }
+}
