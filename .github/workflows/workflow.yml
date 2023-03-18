@@ -1,5 +1,5 @@
 ---
-name: "workflow"
+name: "ECR-ECS-GH-Deployment"
 
 'on':
   push:
