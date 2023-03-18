@@ -32,17 +32,22 @@ jobs:
           terraform_version: 1.4.2
 
       - name: Initialize Terraform
-        run: |
-          cd terraform/
-          terraform init
+        working-directory: ./terraform
+        run: terraform init -input=false  
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
   
       - name: Terraform Destroy
+        if: steps.plan.outcome == 'success'
+        id: destroy
+        continue-on-error: true
+        working-directory: ./terraform
         run: |
-          cd terraform/
-          terraform destroy "tfplan"
+          terraform destroy \
+          -input=false \
+          -no-color \
+          tfplan
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}    
