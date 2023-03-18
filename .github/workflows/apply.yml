@@ -1,4 +1,4 @@
-name: Apply Terraform
+name: Apply Terraform Environment
 
 on:
   workflow_dispatch:
@@ -28,7 +28,11 @@ jobs:
           terraform_version: 1.4.2
       
       - name: Initialize Terraform
-        run: terraform init
+        run: |
+          cd terraform/
+          terraform init
       
       - name: Apply Terraform
-        run: terraform apply -auto-approve
+        run: |
+          cd terraform/
+          terraform destroy -auto-approve
