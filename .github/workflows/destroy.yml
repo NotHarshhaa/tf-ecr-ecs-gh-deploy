@@ -27,7 +27,7 @@ jobs:
         with:
           backend-config: |
             bucket = "terraformbackendaccess"
-            key    = "tfplan.tfstate"
+            key    = "terraformbackendaccess.tfstate"
             region = "us-east-1"
           terraform_version: 1.4.2
 
