@@ -55,6 +55,7 @@ jobs:
 
     steps:    
       - name: Initialize Terraform
+        working-directory: terraform
         run: |
           terraform init
         env:
@@ -67,6 +68,7 @@ jobs:
 
     steps:    
       - name: Terraform Destroy
+        working-directory: terraform
         if: steps.plan.outcome == 'success'
         id: destroy
         continue-on-error: true

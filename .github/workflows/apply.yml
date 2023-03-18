@@ -55,6 +55,7 @@ jobs:
 
     steps:    
       - name: Initialize Terraform
+        working-directory: terraform
         run: |
           terraform init
         env:
@@ -67,6 +68,7 @@ jobs:
 
     steps:
       - name: Plan Terraform
+        working-directory: terraform
         run: |
           terraform plan
         env:
@@ -79,6 +81,7 @@ jobs:
 
     steps:    
       - name: Apply Terraform
+        working-directory: terraform
         if: steps.plan.outcome == 'success'
         id: apply
         continue-on-error: true
