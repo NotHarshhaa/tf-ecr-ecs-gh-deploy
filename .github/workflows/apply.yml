@@ -56,7 +56,6 @@ jobs:
     steps:    
       - name: Initialize Terraform
         run: |
-          cd terraform/
           terraform init
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -69,7 +68,6 @@ jobs:
     steps:
       - name: Plan Terraform
         run: |
-          cd terraform/
           terraform plan -auto-approve
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -85,7 +83,6 @@ jobs:
         id: apply
         continue-on-error: true
         run: |
-          cd terraform/
           terraform apply -auto-approve
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
