@@ -79,8 +79,4 @@ resource "aws_ecs_service" "my_service" {
   task_definition = aws_ecs_task_definition.my_task_definition.arn
   desired_count = 1
   launch_type = "EC2"
-  network_configuration {
-    security_groups = [aws_security_group.my_security_group.id]
-    subnets = [aws_subnet.my_subnet.id]
-  }
 }
