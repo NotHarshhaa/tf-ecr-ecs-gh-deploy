@@ -1,11 +1,9 @@
 name: Destroy Terraform Environment
 
 on:
-  workflow_dispatch:
-    inputs:
-      parameter-name:
-        description: 'Destroy Infrastructure'
-        required: true
+  push:
+    branches:
+      - main
 
 jobs:
   destroy:
