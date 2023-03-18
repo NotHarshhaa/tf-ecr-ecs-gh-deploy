@@ -9,32 +9,59 @@ on:
 
 
 jobs:
-  destroy:
+  Checkout_code:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Terraform destroy
+  Configure_AWS:
+    runs-on: ubuntu-latest      
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1  
+
+  Setup_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:  
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          version: "1.0.11"
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-1"
+          terraform_version: 1.4.2
 
+  Init_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:    
       - name: Initialize Terraform
+        working-directory: ./terraform
         run: |
-          cd terraform/
           terraform init
 
+  Plan_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:
       - name: Plan Terraform
+        working-directory: ./terraform
         run: |
-          cd terraform/
           terraform plan
            
-      - name: Terraform destroy
+  Destroy_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:    
+      - name: Terraform Destroy
+        if: steps.plan.outcome == 'success'
+        id: destroy
+        continue-on-error: true
+        working-directory: ./terraform
         run: |
-          cd terraform/
           terraform destroy -auto-approve
+

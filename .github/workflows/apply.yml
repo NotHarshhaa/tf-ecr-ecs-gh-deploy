@@ -8,13 +8,17 @@ on:
         required: true
 
 jobs:
-  apply:
+  Checkout_code:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
+  Configure_AWS:
+    runs-on: ubuntu-latest      
+
+    steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -22,22 +26,41 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1  
 
+  Setup_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:  
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 1.4.2
       
+  Init_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:    
       - name: Initialize Terraform
+        working-directory: ./terraform
         run: |
-          cd terraform/
           terraform init
 
+  Plan_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:
       - name: Plan Terraform
+        working-directory: ./terraform
         run: |
-          cd terraform/
           terraform plan
-      
+
+  Apply_Terraform:
+    runs-on: ubuntu-latest      
+
+    steps:    
       - name: Apply Terraform
+        if: steps.plan.outcome == 'success'
+        id: apply
+        continue-on-error: true
+        working-directory: ./terraform
         run: |
-          cd terraform/
           terraform apply -auto-approve
