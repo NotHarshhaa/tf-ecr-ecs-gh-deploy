@@ -48,12 +48,9 @@ jobs:
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
   
       - name: Apply Terraform
-        if: steps.plan.outcome == 'success'
-        id: apply
-        continue-on-error: true
         run: |
           cd terraform/
-          terraform apply "tfplan" -auto-approve
+          terraform apply "tfplan"
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  

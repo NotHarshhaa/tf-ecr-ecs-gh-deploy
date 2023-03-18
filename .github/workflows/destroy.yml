@@ -40,12 +40,9 @@ jobs:
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
   
       - name: Terraform Destroy
-        if: steps.plan.outcome == 'success'
-        id: destroy
-        continue-on-error: true
         run: |
           cd terraform/
-          terraform destroy "tfplan" -auto-approve
+          terraform destroy "tfplan"
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}    
