@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "Running unit tests"  
 
-  Configure_AWS:
+  Destroy_Infrastructure:
     needs: Checkout_code
     runs-on: ubuntu-latest      
 
@@ -35,11 +35,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1  
 
-  Setup_Terraform:
-    needs: Configure_AWS
-    runs-on: ubuntu-latest      
-
-    steps:  
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -49,30 +44,20 @@ jobs:
             region = "us-east-1"
           terraform_version: 1.4.2
 
-  Init_Terraform:
-    needs: Setup_Terraform
-    runs-on: ubuntu-latest      
-
-    steps:    
       - name: Initialize Terraform
-        working-directory: terraform
         run: |
+          cd terraform/
           terraform init
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
-
-  Destroy_Terraform:
-    needs: Init_Terraform
-    runs-on: ubuntu-latest      
-
-    steps:    
+  
       - name: Terraform Destroy
-        working-directory: terraform
         if: steps.plan.outcome == 'success'
         id: destroy
         continue-on-error: true
         run: |
+          cd terraform/
           terraform destroy -auto-approve
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}

@@ -23,8 +23,7 @@ jobs:
         run: |
           echo "Running unit tests"  
 
-  Configure_AWS:
-    needs: Checkout_code
+  Apply_Infrastructure:
     runs-on: ubuntu-latest      
 
     steps:
@@ -35,11 +34,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1  
 
-  Setup_Terraform:
-    needs: Configure_AWS
-    runs-on: ubuntu-latest      
-
-    steps:  
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -49,43 +43,28 @@ jobs:
             region = "us-east-1"
           terraform_version: 1.4.2
       
-  Init_Terraform:
-    needs: Setup_Terraform
-    runs-on: ubuntu-latest      
-
-    steps:    
       - name: Initialize Terraform
-        working-directory: terraform
         run: |
+          cd terraform/
           terraform init
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
 
-  Plan_Terraform:
-    needs: Init_Terraform
-    runs-on: ubuntu-latest      
-
-    steps:
       - name: Plan Terraform
-        working-directory: terraform
         run: |
+          cd terraform/
           terraform plan
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
-
-  Apply_Terraform:
-    needs: Plan_Terraform
-    runs-on: ubuntu-latest      
-
-    steps:    
+  
       - name: Apply Terraform
-        working-directory: terraform
         if: steps.plan.outcome == 'success'
         id: apply
         continue-on-error: true
         run: |
+          cd terraform/
           terraform apply -auto-approve
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
