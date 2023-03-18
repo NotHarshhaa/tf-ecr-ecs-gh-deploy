@@ -24,6 +24,7 @@ jobs:
           echo "Running unit tests"  
 
   Configure_AWS:
+    needs: Checkout_code
     runs-on: ubuntu-latest      
 
     steps:
@@ -35,6 +36,7 @@ jobs:
           aws-region: us-east-1  
 
   Setup_Terraform:
+    needs: Configure_AWS
     runs-on: ubuntu-latest      
 
     steps:  
@@ -48,6 +50,7 @@ jobs:
           terraform_version: 1.4.2
       
   Init_Terraform:
+    needs: Setup_Terraform
     runs-on: ubuntu-latest      
 
     steps:    
@@ -60,6 +63,7 @@ jobs:
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
 
   Plan_Terraform:
+    needs: Init_Terraform
     runs-on: ubuntu-latest      
 
     steps:
@@ -72,6 +76,7 @@ jobs:
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  
 
   Apply_Terraform:
+    needs: Plan_Terraform
     runs-on: ubuntu-latest      
 
     steps:    
