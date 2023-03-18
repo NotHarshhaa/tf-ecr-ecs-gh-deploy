@@ -27,7 +27,7 @@ jobs:
         with:
           backend-config: |
             bucket = "terraformbackendaccess"
-            key    = "terraformbackendaccess.tfstate"
+            key    = "tfplan.tfstate"
             region = "us-east-1"
           terraform_version: 1.4.2
 
@@ -45,7 +45,7 @@ jobs:
         continue-on-error: true
         run: |
           cd terraform/
-          terraform destroy -auto-approve
+          terraform destroy tfplan -auto-approve
         env:
           TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}    
