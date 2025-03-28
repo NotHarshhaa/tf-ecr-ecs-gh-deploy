@@ -3,36 +3,58 @@ name: Destroy Terraform Environment
 on:
   workflow_dispatch:
     inputs:
-      parameter-name:
-        description: 'Destroy Infrastructure'
+      destroy_confirmation:
+        description: 'Confirm Destroy (yes/no)'
         required: true
+        default: 'no'
 
 jobs:
   Destroy_Infrastructure:
     runs-on: ubuntu-latest
-    env:
-      TF_BACKEND_CONFIG: |
-        bucket = "terraformbackendaccess"
-        key    = "terraformbackendaccess.tfstate"
-        region = "us-east-1"
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v3
         with:
           ref: master
           fetch-depth: 1
-          
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+
+      - name: 🔑 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Initialize Terraform
-        run: terraform init
-        working-directory: terraform
+      - name: ⚙️ Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.2
 
-      - name: Destroy infrastructure
+      - name: 📌 Terraform Init
+        working-directory: ./terraform
+        run: terraform init -input=false
+        env:
+          TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: ⚠️ Confirm Destroy Action
+        if: github.event.inputs.destroy_confirmation != 'yes'
+        run: |
+          echo "Destroy action not confirmed. Exiting..."
+          exit 1
+
+      - name: 🗑️ Destroy Infrastructure
+        working-directory: ./terraform
         run: terraform destroy -auto-approve
-        working-directory: terraform
+        env:
+          TF_VAR_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          TF_VAR_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: ✅ Confirm Success
+        if: success()
+        run: echo "Terraform Destroy Completed Successfully!"
+
+      - name: ❌ Capture Failure
+        if: failure()
+        run: echo "Terraform Destroy Failed!" && exit 1

@@ -1,7 +1,6 @@
----
 name: "ECR-ECS-GH-Deployment"
 
-'on':
+on:
   push:
     branches:
       - main
@@ -13,70 +12,75 @@ name: "ECR-ECS-GH-Deployment"
   workflow_dispatch:
     inputs:
       parameter-name:
-        description: 'Start Mannual Workflow'
+        description: 'Start Manual Workflow'
         required: true    
 
 jobs:
   ci:
     name: "ECR-ECS-GH-Integration"
     runs-on: "ubuntu-latest"
+    
     steps:
-      - name: "Checkout Code"
-        uses: "actions/checkout@v2"
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v3
 
-      - name: "Lint code"
-        run: |
-          echo "Linting repository"
-          
-      - name: "Run unit tests"
-        run: |
-          echo "Running unit tests"
+      - name: "🔍 Lint Code"
+        run: echo "Linting repository..."
+
+      - name: "🧪 Run Unit Tests"
+        run: echo "Running unit tests..."
 
   cd:
     name: "ECR-ECS-GH-Deployment"
     runs-on: "ubuntu-latest"
-    needs:
-      - ci
-    steps:
-      - name: "Checkout Code"
-        uses: "actions/checkout@v2"
+    needs: ci  # Ensures CD runs only after CI is successful
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+    steps:
+      - name: "📥 Checkout Code"
+        uses: actions/checkout@v3
+
+      - name: "🔑 Configure AWS Credentials"
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      - name: "🔐 Login to Amazon ECR"
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: "🐳 Build, Tag, and Push Docker Image to Amazon ECR"
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_NAME }}
-          IMAGE_TAG: demo_image
+          IMAGE_TAG: latest
         run: |
+          echo "🚀 Building Docker Image..."
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          
+          echo "📤 Pushing Image to Amazon ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          
+          echo "🖼️ Setting Image Output..."
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Download task definition
+      - name: "📄 Download ECS Task Definition"
         run: |
+          echo "📥 Fetching ECS Task Definition..."
           aws ecs describe-task-definition --task-definition service \
           --query taskDefinition > task-definition.json
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
+      - name: "📝 Update ECS Task Definition with New Image"
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: task-definition.json
           container-name: application
-          image: ${{ steps.build-image.outputs.image }}
+          image: ${{ github.env.image }}
 
-      - name: Deploy Amazon ECS task definition
+      - name: "🚀 Deploy Updated Task Definition to Amazon ECS"
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
